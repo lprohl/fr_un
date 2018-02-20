@@ -46,7 +46,7 @@ def fractal():
 	fr.perform_calculation()
 	#fr.load_base_image()
 	#fr.step_count_map_from_image()
-	pallete = Pallete(20, "0x1e6b20, 0xee6e1b, 0x7997f4", "summer")
+	pallete = Pallete(20, "0x1e6b20, 0xee6e1c, 0x7997f4", "summer")
 	img = fr.draw_image(pallete)
 	fr.save_image(img, pallete)
 	img_path = fr.generate_image_path(pallete, True)
