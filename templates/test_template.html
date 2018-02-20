@@ -1,0 +1,82 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+
+        {% if title %}
+        <title>Fractal's - {{ title }} </title>
+        {% else %}
+        <title>Fractal's page</title>
+        {% endif %}
+
+        </title>
+    </head>
+
+    <body>
+        <nav class="navbar navbar-inverse">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="/fractal">Fractal</a>
+                    <a class="navbar-brand" href="#">Formula's</a>
+                    <a class="navbar-brand" href="/palletes">Palletes</a>
+                </div>
+            </div>
+        </nav>
+
+
+        <div class="container">
+
+            <div class="row">
+                This is the third dummy comment.  It's actually quite exciting!
+            </div>
+
+            {% for comment in comments %}
+                <div class="row">
+                    {{ comment }}
+                </div>
+            {% endfor %}
+
+            <div class="row">
+                <form action="." method="POST">
+                    <textarea name="contents" class="form-control" placeholder="Enter a comment"></textarea>
+                    <input type="submit" class="btn btn-success" value="Post comment">
+                </form>
+            </div>
+
+        </div><!-- /.container -->
+
+        <div class="container" name="palletes">
+            {% if palletes %}
+                <div class="palletes_count">
+                    {{ len(palletes) }}
+                </div>
+            {% endif %}
+
+            {% for pallete in palletes %}
+                <div class="pallete">
+                    {{ pallete.name }}
+                </div>
+            {% endfor %}
+
+        </div><!-- /.container -->
+
+        {% if pallete %}
+            <div class="pallete">
+                {{ pallete.name }}
+            </div>
+        {% endif %}
+        {% if path %}
+            <div class="path">
+                <img src="{{ path }}"/>
+            </div>
+        {% endif %}
+    </body>
+</html>
