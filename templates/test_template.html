@@ -54,15 +54,15 @@
         </div><!-- /.container -->
 
         <div class="container" name="palletes">
-            {% if palletes %}
+            {% if palletes_count %}
                 <div class="palletes_count">
-                    {{ len(palletes) }}
+                    {{ palletes_count }}
                 </div>
             {% endif %}
 
             {% for pallete in palletes %}
                 <div class="pallete">
-                    {{ pallete.name }}
+                    {{ pallete }}
                 </div>
             {% endfor %}
 
@@ -70,12 +70,17 @@
 
         {% if pallete %}
             <div class="pallete">
-                {{ pallete.name }}
+                {{ pallete }}
             </div>
         {% endif %}
-        {% if path %}
-            <div class="path">
-                <img src="{{ path }}"/>
+        {% if fractal %}
+            <div class="fractal">
+                {{ fractal }}
+            </div>
+        {% endif %}
+        {% if fractal_img %}
+            <div class="fractal_img">
+                <img src="{{ fractal_img }}"/>
             </div>
         {% endif %}
     </body>

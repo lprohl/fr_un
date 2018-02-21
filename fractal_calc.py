@@ -5,6 +5,7 @@ from __future__ import print_function
 import scipy
 import scipy.stats
 from scipy.stats import tstd
+#import statistics
 from make_safe_exec_str import remove_dangerous_symbols_exec
 
 ### Функция для подготовки списков координат ###
@@ -98,7 +99,10 @@ def calculate_fractal(x_arr, y_arr, value_init, function, params, max_step_count
 
 		x_index = x_index + 1
 	print("")
-	return (step_count_map, step_count_statistics, min_step, max_step, border_min_step, border_max_step)
+	variation = scipy.stats.variation(step_count_statistics)
+	#stdev = statistics.stdev(step_count_statistics)
+
+	return (step_count_map, step_count_statistics, variation, min_step, max_step, border_min_step, border_max_step)
 
 #### Код для самотестирования модуля
 if __name__ == "__main__":
@@ -114,13 +118,14 @@ if __name__ == "__main__":
 	x_arr = prepare_coord_array(x_from, x_to, x_count)
 	y_arr = prepare_coord_array(y_from, y_to, y_count)
 	#В### Выполним расчет ###
-	(step_count_map, step_count_statistics, min_step, max_step, border_min_step, border_max_step) = calculate_fractal(x_arr, y_arr, value_init, function, params, max_step_count, int_limit, ext_limit)
+	(step_count_map, step_count_statistics, variation, min_step, max_step, border_min_step, border_max_step) = calculate_fractal(x_arr, y_arr, value_init, function, params, max_step_count, int_limit, ext_limit)
 	#Г### Выведем на консоль статистику ###
 	print(step_count_statistics)
-	print(scipy.stats.tstd(step_count_statistics))
-	print(scipy.stats.variation(step_count_statistics))
-	#print(dir(prepare_coord_array))
-	#print(prepare_coord_array.func_code)
-	#print(dir([]))
-	#print(dir(""))
+	print(variation)
+	#print(scipy.stats.tstd(step_count_statistics))
+	#print(scipy.stats.variation(step_count_statistics))
+	##print(dir(prepare_coord_array))
+	##print(prepare_coord_array.func_code)
+	##print(dir([]))
+	##print(dir(""))
 

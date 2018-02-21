@@ -3,7 +3,10 @@
 import sqlalchemy
 from sqlalchemy import create_engine, Table, Column, Integer, String, MetaData, ForeignKey
 from fractal_pallete import Pallete
+from setup import images_folder, sqlite_db_engine
 from sqlalchemy.orm import mapper, sessionmaker
+
+use_relative_path = False
 
 metadata = MetaData()
 #Зададим описание таблицы для хранения палитр.
@@ -96,17 +99,20 @@ class PalleteManager:
 
 
 if __name__ == "__main__":
+	use_relative_path = True
 	pallete_manager = PalleteManager(20)
-	pallete_manager.add_engine('sqlite:///pallete.db')
+	pallete_manager.add_engine(sqlite_db_engine(use_relative_path))
+	#pallete_manager.add_engine('sqlite:///pallete.db')
+
 	#pallete_manager.remove_all_palletes()
 	#pallete_manager.add_engine('mysql://user:pass@host/db')
 	#pallete_manager.add_engine('mysql://user29177_frun:porohshock111@31.41.43.1:3306/user29177_FractalUniverse')#?port=3306
 	pallete_manager.load_palletes()
 	print(len(pallete_manager.palletes))
-	#plt = Pallete(20, "0x000000, 0xffffff", "night2")
-	#pallete_manager.add_pallete(plt)
+	plt = Pallete(20, "0x000000, 0xffffff", "night2")
+	pallete_manager.add_pallete(plt)
 	#plt = Pallete(20, "0xff0000, 0x0000ff", "red-blue")
-	#pallete_manager.add_pallete(plt)
+	pallete_manager.add_pallete(plt)
 	#pallete_manager.save_palletes()
 	##pallete_manager.delete_pallete(plt)
 
