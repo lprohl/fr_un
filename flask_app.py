@@ -44,14 +44,18 @@ def palletes():
         #pm.palletes.append(pallete)
         pm.add_pallete(pallete)
         pm.save_palletes()
-        return render_template("test_template.html", comments=comments, palletes=pm.palletes, palletes_count = len(pm.palletes),  title='Palletes')
+        return render_template("test_template.html", comments=comments, branch="/palletes", palletes=pm.palletes, palletes_count = len(pm.palletes),  title='Palletes')
         #return 'Bye!'
 
-    new_pallete_colors = request.form["new_pallete_colors"]
-    new_pallete_name   = request.form["new_pallete_name"]
-    pallete = Pallete(step_count(), new_pallete_colors, new_pallete_name)
-    pm.add_pallete(pallete)
-    pm.save_palletes()
+    if not request.form.get("comment") is None:
+        comments.append(request.form.get("comment"))
+
+    if not request.form.get("new_pallete_colors") is None and not request.form.get("new_pallete_name") is None:
+        new_pallete_colors = request.form["new_pallete_colors"]
+        new_pallete_name   = request.form["new_pallete_name"]
+        pallete = Pallete(step_count(), new_pallete_colors, new_pallete_name)
+        pm.add_pallete(pallete)
+        pm.save_palletes()
 
     return redirect(url_for('palletes'))
 
