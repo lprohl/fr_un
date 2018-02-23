@@ -46,27 +46,38 @@
 
             <div class="row">
                 <form action="." method="POST">
-                    <textarea name="contents" class="form-control" placeholder="Enter a comment"></textarea>
+                    <textarea name="comment" class="form-control" placeholder="Enter a comment"></textarea>
                     <input type="submit" class="btn btn-success" value="Post comment">
                 </form>
             </div>
 
         </div><!-- /.container -->
 
-        <div class="container" name="palletes">
-            {% if palletes_count %}
-                <div class="palletes_count">
-                    {{ palletes_count }}
-                </div>
-            {% endif %}
+        {% if palletes %}
+            <div class="container" name="palletes">
+                {% if palletes_count %}
+                    <div class="palletes_count">
+                        {{ palletes_count }}
+                    </div>
+                {% endif %}
 
-            {% for pallete in palletes %}
-                <div class="pallete">
-                    {{ pallete }}
-                </div>
-            {% endfor %}
+                {% for pallete in palletes %}
+                    <div class="pallete">
+                        {{ pallete }}
+                    </div>
+                {% endfor %}
 
-        </div><!-- /.container -->
+                <div class="row">
+                    <form action="/palletes" method="POST">
+                        <textarea name="new_pallete_colors" class="form-control" placeholder="Enter new pallete colors"></textarea>
+                        <textarea name="new_pallete_name" class="form-control" placeholder="Enter name for new pallete"></textarea>
+
+                        <input type="submit" class="btn btn-success" value="Post pallete">
+                    </form>
+                </div>
+
+            </div><!-- /.container -->
+        {% endif %}
 
         {% if pallete %}
             <div class="pallete">

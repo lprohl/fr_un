@@ -6,7 +6,7 @@ from fractal_pallete import Pallete
 from setup import images_folder, sqlite_db_engine
 from sqlalchemy.orm import mapper, sessionmaker
 
-use_relative_path = False
+debug = False
 
 metadata = MetaData()
 #Зададим описание таблицы для хранения палитр.
@@ -40,10 +40,12 @@ class PalleteManager:
 		for plt in self.palletes:
 			if plt.name == pallete.name:
 				already_in_list = True
-				print ("Pallete with non unique name skipped ", plt.name)
+				if debug:
+				    print ("Pallete with non unique name skipped ", plt.name)
 		if already_in_list != True:
 			self.palletes.append(pallete)
-			print("added", pallete)
+			if debug:
+			    print("added", pallete)
 
     #Загрузка палитр из СУБД
 	def load_palletes(self):
@@ -99,9 +101,11 @@ class PalleteManager:
 
 
 if __name__ == "__main__":
-	use_relative_path = True
+	debug = True
 	pallete_manager = PalleteManager(20)
-	pallete_manager.add_engine(sqlite_db_engine(use_relative_path))
+	path = sqlite_db_engine(debug)
+	print (path)
+	pallete_manager.add_engine(path)
 	#pallete_manager.add_engine('sqlite:///pallete.db')
 
 	#pallete_manager.remove_all_palletes()
@@ -113,7 +117,7 @@ if __name__ == "__main__":
 	pallete_manager.add_pallete(plt)
 	#plt = Pallete(20, "0xff0000, 0x0000ff", "red-blue")
 	pallete_manager.add_pallete(plt)
-	#pallete_manager.save_palletes()
+	pallete_manager.save_palletes()
 	##pallete_manager.delete_pallete(plt)
 
 
