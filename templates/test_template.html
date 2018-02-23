@@ -64,6 +64,7 @@
                 {% for pallete in palletes %}
                     <div class="pallete">
                         {{ pallete }}
+                        <img src="{{ pallete.path_name() }}"/>
                     </div>
                 {% endfor %}
 

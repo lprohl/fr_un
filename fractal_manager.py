@@ -3,7 +3,7 @@
 from fractal_pallete_manager import PalleteManager
 from fractal_pallete import Pallete
 from fractal_calc import prepare_coord_array, prepare_statistics_arr, calculate_fractal
-from fractal_draw import draw_fractal, fractal_arr_from_image, load_image, save_image, platform_dependent_path, ensure_dir
+from draw_xy_map import draw_xy_map, xy_map_from_image, load_image, save_image, platform_dependent_path, ensure_dir
 import sqlalchemy
 from sqlalchemy import create_engine, Table, Column, Integer, Float, String, MetaData, ForeignKey
 from sqlalchemy.orm import mapper, sessionmaker
@@ -46,7 +46,7 @@ class Fractal(object):
 				self.base_pallete = pallete_manager.get_dafault_pallete()
 			pallete = self.base_pallete
 			isBasePallete = True
-		img = draw_fractal(self.x_count, self.y_count, pallete.pallete, self.step_count_map)
+		img = draw_xy_map(self.x_count, self.y_count, pallete.pallete, self.step_count_map)
 		if isBasePallete == True:
 			self.base_image = img
 		return img
@@ -62,7 +62,7 @@ class Fractal(object):
 		if self.base_pallete is None:
 			pallete_manager = PalleteManager(self.max_step_count)
 			self.base_pallete = pallete_manager.get_dafault_pallete()
-		(self.x_count, self.y_count, self.step_count_map) = fractal_arr_from_image(self.base_pallete.pallete, self.base_image)
+		(self.x_count, self.y_count, self.step_count_map) = xy_map_from_image(self.base_pallete.pallete, self.base_image)
 
 	def generate_image_path(self, pallete = ""):
 		#root_image_folder = "/static/images/"

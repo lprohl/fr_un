@@ -1,8 +1,15 @@
 def images_folder(debug = False):
     if not debug:
-        return '/../static/images/'
+        return 'static/images/'
     else:
-        return '/../static/images_debug/'
+        return '../static/images_debug/'
+
+def palletes_folder(debug = False):
+    if not debug:
+        return 'static/images/palletes/'
+    else:
+        return '../static/images_debug/palletes/'
+
 
 def sqlite_db_engine(debug = False):
     if not debug:
