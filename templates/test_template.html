@@ -45,7 +45,7 @@
             {% endfor %}
 
             <div class="row">
-                <form action="." method="POST">
+                <form action={% if branch %} "{{branch}}" {% else %} "." {% endif %} method="POST">
                     <textarea name="comment" class="form-control" placeholder="Enter a comment"></textarea>
                     <input type="submit" class="btn btn-success" value="Post comment">
                 </form>
@@ -64,6 +64,7 @@
                 {% for pallete in palletes %}
                     <div class="pallete">
                         {{ pallete }}
+                        <img src="{{ pallete.path_name() }}"/>
                     </div>
                 {% endfor %}
 
