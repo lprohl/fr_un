@@ -15,28 +15,23 @@
     </head>
 
     <body>
+        <!-- ПАНЕЛЬ НАВИГАЦИИ -->
         <nav class="navbar navbar-inverse">
             <div class="container">
-                <div class="navbar-header">
+                <ul class="nav navbar-nav">
                     <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
                         <span class="sr-only">Toggle navigation</span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
                     </button>
-                    <a class="navbar-brand" href="/fractal">Fractal</a>
-                    <a class="navbar-brand" href="#">Formula's</a>
-                    <a class="navbar-brand" href="/palletes">Palletes</a>
-                </div>
+                    <li {% if fractal_active %}class="active"{% endif %}><a class="navbar-brand" href="/fractal">Fractal</a></li>
+                    <li {% if formula_active %}class="active"{% endif %}><a class="navbar-brand" href="#">Formula's</a></li>
+                    <li {% if palletes_active %}class="active"{% endif %}><a class="navbar-brand" href="/palletes">Palletes</a></li>
+                </ul>
             </div>
         </nav>
 
-
+        <!-- КОММЕНТАРИИ -->
+        {% if comments %}
         <div class="container">
-
-            <div class="row">
-                This is the third dummy comment.  It's actually quite exciting!
-            </div>
 
             {% for comment in comments %}
                 <div class="row">
@@ -52,30 +47,37 @@
             </div>
 
         </div><!-- /.container -->
+        {% endif %}
 
+        <!-- НАБОР ПАЛИТР -->
         {% if palletes %}
             <div class="container" name="palletes">
                 {% if palletes_count %}
-                    <div class="palletes_count">
-                        {{ palletes_count }}
+                    <div class="bg-success">
+                        There are currently {{ palletes_count }} palletes.
                     </div>
                 {% endif %}
-
-                {% for pallete in palletes %}
-                    <div class="pallete">
-                        {{ pallete }}
-                        <img src="{{ pallete.path_name() }}"/>
+                <form action="/palletes" method="POST">
+                    <div class="row">
+                        {% for pallete in palletes %}
+                            <figure class="pallete">
+                                <div div class="col-sm-7" style="background-color:pink;">
+                                    <img class="img-rounded" src="{{ pallete.path_name() }}" alt="{{ pallete }}"/>
+                                    <figcaption>{{ pallete.name + " {" + pallete.pallete_str + "}" }}</figcaption>
+                                </div>
+                                <div div class="col-sm-5" style="background-color:yellow;">
+                                    <input type="checkbox" id="RemovePallete_{{ pallete.name }}"} name="RemovePallete_{{ pallete.name }}" class="form-control">
+                                    <label for="RemovePallete_{{ pallete.name }}">Remove pallete {{ pallete.name }}?</label>
+                                </div>
+                            </figure>
+                        {% endfor %}
                     </div>
-                {% endfor %}
-
-                <div class="row">
-                    <form action="/palletes" method="POST">
+                    <div class="row">
                         <textarea name="new_pallete_colors" class="form-control" placeholder="Enter new pallete colors"></textarea>
                         <textarea name="new_pallete_name" class="form-control" placeholder="Enter name for new pallete"></textarea>
-
                         <input type="submit" class="btn btn-success" value="Post pallete">
-                    </form>
-                </div>
+                    </div>
+                </form>
 
             </div><!-- /.container -->
         {% endif %}

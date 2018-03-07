@@ -44,7 +44,7 @@ def palletes():
         #pm.palletes.append(pallete)
         pm.add_pallete(pallete)
         pm.save_palletes()
-        return render_template("test_template.html", comments=comments, branch="/palletes", palletes=pm.palletes, palletes_count = len(pm.palletes),  title='Palletes')
+        return render_template("test_template.html", comments=comments, branch="/palletes", palletes_active=True, palletes=pm.palletes, palletes_count = len(pm.palletes),  title='Palletes')
         #return 'Bye!'
 
     if not request.form.get("comment") is None:
@@ -53,13 +53,19 @@ def palletes():
     if not request.form.get("new_pallete_colors") is None and not request.form.get("new_pallete_name") is None:
         new_pallete_colors = request.form["new_pallete_colors"]
         new_pallete_name   = request.form["new_pallete_name"]
-        pallete = Pallete(step_count(), new_pallete_colors, new_pallete_name)
-        pm.add_pallete(pallete)
-        pm.save_palletes()
+        if new_pallete_colors <> "" and new_pallete_name <> "":
+            pallete = Pallete(step_count(), new_pallete_colors, new_pallete_name)
+            pm.add_pallete(pallete)
+            pm.save_palletes()
+        for key, val in request.form.to_dict().items():
+            if val == "on" and key.find("RemovePallete_") >= 0:
+                remove_pallete_name = key.replace("RemovePallete_", "", 1)
+                #comments.append("remove pallete name="+remove_pallete_name)
+                pm.delete_pallete(remove_pallete_name)
+                pm.save_palletes()
+            #comments.append(key+"="+val)
 
     return redirect(url_for('palletes'))
-
-
 
 @app.route('/fractal')
 def fractal():
@@ -73,7 +79,7 @@ def fractal():
 	fr.save_image(img, pallete)
 	(path, name) = fr.generate_image_path(pallete)
 	fractal_img_path = path + name
-	return render_template("test_template.html", fractal_img=fractal_img_path, pallete=pallete, fractal=fr,  title='Fractal')#, path=img_path)
+	return render_template("test_template.html", branch="/fractal", fractal_active=True, fractal_img=fractal_img_path, pallete=pallete, fractal=fr,  title='Fractal')#, path=img_path)
 	#return render_template("test_template.html", path="/static/images/V=VxxN+Z/(N,Z)=(1.51, 0.7+0.05J)/summer.png")
 	#return render_template("test_template.html", path="/static/images/summer.png")
 

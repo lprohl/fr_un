@@ -67,7 +67,7 @@ class Pallete(object):
         return False
 
     def path_name(self):
-        return palletes_folder(debug) + self.name + ".png"
+        return "/"+palletes_folder(debug) + self.name + ".png"
 
     def create_image(self, width, height):
         xy_map = []

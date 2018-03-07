@@ -5,15 +5,17 @@ from fractal_pallete import Pallete
 from fractal_calc import prepare_coord_array, prepare_statistics_arr, calculate_fractal
 from draw_xy_map import draw_xy_map, xy_map_from_image, load_image, save_image, platform_dependent_path, ensure_dir
 import sqlalchemy
-from sqlalchemy import create_engine, Table, Column, Integer, Float, String, MetaData, ForeignKey
+from sqlalchemy import create_engine, Table, Column, Integer, Boolean, Float, String, MetaData, ForeignKey
 from sqlalchemy.orm import mapper, sessionmaker
 from setup import images_folder, sqlite_db_engine
+#import sys
 
-use_relative_path = False
+debug = False
 
 class Fractal(object):
-	def __init__(self, params, function = "v=v**n+z", value_init = "v=x+1j*y", name = "", max_step_count = 20, int_limit = 0.01, ext_limit = 100):
+	def __init__(self, params, function = "v=v**n+z", value_init = "v=x+1j*y", name = "", max_step_count = 20, int_limit = 0.01, ext_limit = 100.0):
 		(self.function, self.value_init, self.params, self.name) = (function, value_init, params, name)
+		self.name_id = function + " - " + params + " - " + value_init
 		(self.max_step_count, self.int_limit, self.ext_limit) = (max_step_count, int_limit, ext_limit)
 		(self.calculated, self.step_count_statistics, self.variation) = (False, [], 0)
 		(self.min_step, self.max_step, self.border_min_step, self.border_max_step) = (0, 0, 0, 0)
@@ -36,6 +38,7 @@ class Fractal(object):
 		self.step_count_statistics = prepare_statistics_arr(self.max_step_count)
 		self.prepare_xy_arrays()
 		(self.step_count_map, self.step_count_statistics, self.stdev, self.min_step, self.max_step, self.border_min_step, self.border_max_step) = calculate_fractal(self.x_arr, self.y_arr, self.value_init, self.function, self.params, self.max_step_count, self.int_limit, self.ext_limit)
+		self.step_count_statistics_str = str(self.step_count_statistics)
 
 
 	def draw_image(self, pallete = None):
@@ -66,7 +69,7 @@ class Fractal(object):
 
 	def generate_image_path(self, pallete = ""):
 		#root_image_folder = "/static/images/"
-		path = images_folder(use_relative_path) + self.function + "/" + self.params + "/"
+		path = images_folder(debug) + self.function + "/" + self.params + "/"
 		#URL = "/" + root_image_folder + self.function + "/" + self.params + "/"
 		path = platform_dependent_path(path)
 		#URL = platform_dependent_path(URL)
@@ -104,11 +107,13 @@ fractal_table = Table('fractals', metadata,
 	Column('function', String(100)),
 	Column('value_init', String(100)),
 	Column('params', String(100)),
+	Column('name', String(100)),
+	Column('name_id', String(200)),
 	Column('max_step_count', Integer),
 	Column('int_limit', Float),
 	Column('ext_limit', Float),
-	Column('calculated', Integer),
-	Column('step_count_statistics', String(100)),
+	Column('step_count_statistics_str', String(300)),
+	Column('calculated', Boolean),
 	Column('variation', Float),
 	Column('min_step', Integer),
 	Column('max_step', Integer),
@@ -135,6 +140,88 @@ class FractalManager:
 			return "FractalManager ('%s')" % self.fractals
 	#def add_engine(self):
 
+    #Добавление движка СУБД и создание в добавленной СУБД таблицы для хранения информации о палитрах (если не создана ранее)
+	def add_engine(self, connection_string):
+		engine = create_engine(connection_string, echo=False)
+		self.engines.append(engine)
+		metadata.create_all(engine)
+
+    #Добавление фрактала с проверкой на уникальность
+	def add_fractal(self, fractal):
+		already_in_list = False
+		for fr in self.fractals:
+			if (fr.name_id == fractal.name_id):
+				already_in_list = True
+				if debug:
+				    print ("Fractal is skipped.", fr.name_id)
+		if already_in_list != True:
+			self.fractals.append(fractal)
+			if debug:
+			    print("added", fractal)
+
+    #Загрузка фракталов из СУБД
+	def load_fractals(self):
+		Session = sessionmaker()
+		for engine in self.engines:
+			Session.configure(bind=engine)
+			session = Session()
+			for instance in session.query(Fractal).order_by(Fractal.name_id):
+				fr = Fractal(str(instance.params), str(instance.function), str(instance.value_init))
+
+				self.add_fractal(fr)
+				#print(self.step_count, str(instance.pallete_str), str(instance.name))
+
+    #Сохранение палитр в СУБД
+	def save_fractals(self):
+		Session = sessionmaker()
+		for engine in self.engines:
+			Session.configure(bind=engine)
+			for fr in self.fractals:
+				session = Session()
+				already_exists = False
+				for instance in session.query(Fractal).filter_by(name_id=fr.name_id):
+					already_exists = True
+					if debug:
+					    print("already exists in db '%s'", fr)
+				if already_exists == False:
+					if debug:
+					    print("Saving fractal '%s'", fr)
+					session.add(fr)
+					try:
+						session.commit()
+					except Exception as ex:
+						print ("Error while saving fractal ", engine, ex.message)
+
+    #Удаление палитры из списка и СУБД
+	def delete_fractal(self, fractal):
+		if not isinstance(fractal, Fractal):
+		    fractal_name_id = fractal
+		else:
+		    fractal_name_id = fractal.name_id
+		Session = sessionmaker()
+		if debug:
+		    print ("deleting " + fractal)
+		for engine in self.engines:
+			Session.configure(bind=engine)
+			session = Session()
+			obj=session.query(Pallete).filter_by(name_id=fractal_name_id).one()
+			session.delete(obj)
+			session.commit()
+		for fr in self.fractals:
+			if fr.name_id == fractal_name_id:
+				self.fractals.remove(fr)
+
+    #Удаление всех фракталов
+	def remove_all_fractals(self):
+		for engine in self.engines:
+			tractals_table.drop(engine)
+
+    #Получение фрактала по умолчанию
+	def get_dafault_fractal(self):
+		fr = Fractal("(n,z)=(1.51, 0.7+0.05j)")
+		self.add_fractal(fr)
+		return fr
+
 #загружаем из БД список рассчитанных фракталов (параметры, статистика итогов расчета)
 #по выбранным загружаем файлы с изображениями
 #по отсутствующим изображениям инициируем перерасчет
@@ -142,16 +229,21 @@ class FractalManager:
 #инициируем расчет, сохраняем статистику параметры расчета, опционно сохраняем изображение в стандартной палитре
 #по выбранному фракталу получаем изображение в интересующей палитре, интересующего разрешения (если есть файл, то из файла, если его нет, то без него).
 if __name__ =="__main__":
-	use_relative_path = True
-	#pallete_manager = PalleteManager(20)
-	#pallete_manager.add_engine(sqlite_db_engine(use_relative_path))
+    debug = True
+    fractal_manager = FractalManager()
+    path = sqlite_db_engine(debug)
+    print(path)
+    fractal_manager.add_engine(path)
+    fractal_manager.load_fractals()
 
-	fr = Fractal("(n,z)=(1.51, 0.7+0.05j)")
-	(fr.x_count, fr.y_count) = (800,800)
-	fr.perform_calculation()
-	#fr.load_base_image()
-	#fr.step_count_map_from_image()
-	pallete = Pallete(20, "0x1e6b20, 0xee6e1b, 0x7997f4", "summer")
-	img = fr.draw_image(pallete)
-	fr.save_image(img, pallete)
+    fr = Fractal("(n,z)=(1.51, 0.7+0.05j)")
+    (fr.x_count, fr.y_count) = (800,800)
+    fr.perform_calculation()
+    fractal_manager.add_fractal(fr)
+    fractal_manager.save_fractals()
+    #fr.load_base_image()
+    #fr.step_count_map_from_image()
+    pallete = Pallete(20, "0x1e6b20, 0xee6e1b, 0x7997f4", "summer")
+    #img = fr.draw_image(pallete)
+    #fr.save_image(img, pallete)
 
