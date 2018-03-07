@@ -77,15 +77,21 @@ class PalleteManager:
 
     #Удаление палитры из списка и СУБД
 	def delete_pallete(self, pallete):
+		if not isinstance(pallete, Pallete):
+		    pallete_name = pallete
+		else:
+		    pallete_name = pallete.name
 		Session = sessionmaker()
+		if debug:
+		    print ("deleting " + pallete)
 		for engine in self.engines:
 			Session.configure(bind=engine)
 			session = Session()
-			obj=session.query(Pallete).filter_by(name=pallete.name).one()
+			obj=session.query(Pallete).filter_by(name=pallete_name).one()
 			session.delete(obj)
 			session.commit()
 		for plt in self.palletes:
-			if plt.name == pallete.name:
+			if plt.name == pallete_name:
 				self.palletes.remove(plt)
 
     #Удаление всех палитр
@@ -114,10 +120,10 @@ if __name__ == "__main__":
 	pallete_manager.load_palletes()
 	print(len(pallete_manager.palletes))
 	plt = Pallete(20, "0x000000, 0xffffff", "night2")
+	#pallete_manager.delete_pallete("night2")
 	pallete_manager.add_pallete(plt)
 	#plt = Pallete(20, "0xff0000, 0x0000ff", "red-blue")
 	pallete_manager.add_pallete(plt)
 	pallete_manager.save_palletes()
-	##pallete_manager.delete_pallete(plt)
 
 
