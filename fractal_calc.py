@@ -39,7 +39,9 @@ def prepare_statistics_arr(max_step_count):
 # - два массива стартовых значений x и y;
 # - cтроковое значение переменной v для инициирования начального значения;
 # - функцию расчета в виде строки;
-# - максимальное количество шагов.
+# - параметры расчета в виде строки;
+# - максимальное количество шагов;
+# - внешнюю и внутреннюю границы области при выходе за которые расчет прерывается.
 def calculate_fractal(x_arr, y_arr, value_init, function, params, max_step_count, int_limit, ext_limit):
 	#обезопашиваем запускаемые участки кода
 	value_init = remove_dangerous_symbols_exec(value_init)
@@ -70,7 +72,7 @@ def calculate_fractal(x_arr, y_arr, value_init, function, params, max_step_count
 			exec (value_init.strip())
 			# Выполняем расчет максимального количества шагов для данной точки до выхода значения функции за пределы области
 			step = 0
-			while ((abs(v) > int_limit) and (abs(v) < ext_limit)):
+			while step == 0 or ((abs(v) > int_limit) and (abs(v) < ext_limit)):
 				if step >= max_step_count:
 					break;
 				exec (function.strip())
@@ -111,7 +113,8 @@ if __name__ == "__main__":
 	(x_from, x_to, x_count) = (-2, 2, 200)
 	(y_from, y_to, y_count) = (-2, 2, 200)
 	#А.2# Функция, инициация начального значения, постоянные параметры расчета
-	(function, value_init, params) = ("v=v**n+z", "v=x+1j*y", "(n,z)=(1.7, 0.5+0.05j)")
+	#(function, value_init, params) = ("v=v**n+z", "v=x+1j*y", "(n,z)=(1.7, 0.5+0.05j)")
+	(function, value_init, params) = ("v=v**n+z", "(z,v)=(x+1j*y,0)", "(n)=(2)")
 	#А.3# Внутенняя, внешняя граница области, максимальное количество шагов расчета
 	(int_limit, ext_limit, max_step_count) = (0.01, 100, 30)
 	#Б### Подготовим служебные переменные - списки значений координат ###
