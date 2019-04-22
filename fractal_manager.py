@@ -303,6 +303,7 @@ if __name__ =="__main__":
             img = fr.draw_image(pallete)
             fr.save_image(img, pallete)
 
+
 	#def __init__(self, params, function = "v=v**n+z", value_init = "v=x+1j*y", name = "", max_step_count = 20, int_limit = 0.01, ext_limit = 100.0):
 
     print("#####  Calculating Mondelbrot set ######")
