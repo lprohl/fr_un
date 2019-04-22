@@ -58,7 +58,7 @@ class Fractal(object):
     	self.x_arr = prepare_coord_array(self.x_from, self.x_to, self.x_count)
     	self.y_arr = prepare_coord_array(self.y_from, self.y_to, self.y_count)
 
-    def perform_calculation(self):
+    def perform_calculation(self, force_save_image = True):
     	self.step_count_statistics = prepare_statistics_arr(self.max_step_count)
     	self.prepare_xy_arrays()
     	(self.step_count_map, self.step_count_statistics, self.variation, self.min_step, self.max_step, self.border_min_step, self.border_max_step) = calculate_fractal(self.x_arr, self.y_arr, self.value_init, self.function, self.params, self.max_step_count, self.int_limit, self.ext_limit)
@@ -68,6 +68,10 @@ class Fractal(object):
     	self.step_count_statistics_str = str(self.step_count_statistics)
     	self.calculated = True
     	self.changed = True
+    	if force_save_image:
+    	    (self.base_image_path, self.base_image_name) = self.generate_image_path()
+    	    img = self.draw_image()
+    	    self.save_image(img)
 
 
     def draw_image(self, pallete = None):
@@ -88,13 +92,19 @@ class Fractal(object):
     		(self.base_image_path, self.base_image_name) = self.generate_image_path()
     	print (self.base_image_path)
     	if self.base_image_path != "":
-    		self.base_image = load_image(self.base_image_path, self.base_image_name)
+    	   try:
+    	       self.base_image = load_image(self.base_image_path, self.base_image_name)
+    	   except:
+    	       self.base_image = None
 
     def step_count_map_from_image(self):
     	if self.base_pallete is None:
     		pallete_manager = PalleteManager(self.max_step_count)
     		self.base_pallete = pallete_manager.get_dafault_pallete()
-    	(self.x_count, self.y_count, self.step_count_map) = xy_map_from_image(self.base_pallete.pallete, self.base_image)
+    	if self.base_image <> None:
+    	    (self.x_count, self.y_count, self.step_count_map) = xy_map_from_image(self.base_pallete.pallete, self.base_image)
+    	else:
+    	    (self.x_count, self.y_count, self.step_count_map) = (0, 0, [])
 
     def generate_image_path(self, pallete = ""):
     	#root_image_folder = "/static/images/"
@@ -184,7 +194,7 @@ class FractalManager:
 				already_in_list = True
 				fr_found_in_list = fr
 				if debug:
-				    print ("Fractal is skipped.", fr.name_id)
+				    print ("already in list", fr.name_id)
 		if already_in_list != True:
 			self.fractals.append(fractal)
 			if debug:
@@ -201,26 +211,18 @@ class FractalManager:
 
     #Загрузка фракталов из СУБД
 	def load_fractals(self):
-		if debug:
-		    print ("## loading fractals from DB.")
+		#if debug:
+		#    print ("## loading fractals from DB.")
 		Session = sessionmaker()
 		for engine in self.engines:
 			Session.configure(bind=engine)
 			session = Session()
 			for instance in session.query(Fractal).order_by(Fractal.name_id):
 				fr = Fractal.from_db(instance)
-				if debug:
-				    print ("  loaded instance ", instance)
-				    print ("  into fractal ", fr)
-				#fr = Fractal(str(instance.params), str(instance.function), str(instance.value_init))
-				#fr.step_count_statistics_str = instance.step_count_statistics_str
-				#if fr.step_count_statistics_str != "" and fr.step_count_statistics_str != None:
-				#    fr.step_count_statistics = eval(fr.step_count_statistics_str)
-				#print(fr.step_count_statistics_str)
-				#print(fr.step_count_statistics)
-				#fr.variation = instance.variation
+				#if debug:
+				#    print ("  loaded instance ", instance)
+				#    print ("  into fractal ", fr)
 				self.add_fractal(fr)
-				#print(self.step_count, str(instance.pallete_str), str(instance.name))
 
     #Сохранение палитр в СУБД
 	def save_fractals(self, force_replace = False):
@@ -290,6 +292,16 @@ if __name__ =="__main__":
     print(path)
     fractal_manager.add_engine(path)
     fractal_manager.load_fractals()
+    for fr in fractal_manager.fractals:
+        if fr.base_image_path != "":
+            print("base_image_path", fr.base_image_path)
+        fr.load_base_image()
+        # Если есть базовое изображение то на его основе можем быстро преобразовать в произвольную палитру
+        if fr.base_image != None:
+            fr.step_count_map_from_image()
+            pallete = Pallete(20, "0xffffff, 0xee6e1b, 0x000000", "test_plt1")
+            img = fr.draw_image(pallete)
+            fr.save_image(img, pallete)
 
 	#def __init__(self, params, function = "v=v**n+z", value_init = "v=x+1j*y", name = "", max_step_count = 20, int_limit = 0.01, ext_limit = 100.0):
 
@@ -297,13 +309,16 @@ if __name__ =="__main__":
     print("#####  Modelbrot set. Variable value of constant parameter ""z"", fixed initial zero value of cyclic variable ""v""")
     fr = Fractal("n=2", "v=v**n+z", "(z,v)=(x+1j*y,0)")
     (fr.x_arr, fr.x_from, fr.x_to) = ([], -2.5, 1.5)
-    (fr.x_count, fr.y_count) = (800,800)
+    (fr.x_count, fr.y_count) = (200,200)
 
     fr.perform_calculation()
     fractal_manager.add_fractal(fr, True)
     fractal_manager.save_fractals(True)
     #fr.load_base_image()
     #fr.step_count_map_from_image()
+    base_img = fr.draw_image()
+    fr.save_image(base_img)
+
     pallete = Pallete(20, "0x1e6b20, 0xee6e1b, 0x7997f4", "summer")
     img = fr.draw_image(pallete)
     fr.save_image(img, pallete)
